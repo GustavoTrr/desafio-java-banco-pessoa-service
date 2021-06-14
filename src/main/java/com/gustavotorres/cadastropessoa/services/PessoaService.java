@@ -74,11 +74,15 @@ public class PessoaService {
         return pessoaRepository.findAll().stream().map(this::convertToPessoaDTO).collect(Collectors.toList());
     }
 
-    public PessoaDTO findOrFail(Long id) {
+    public Pessoa findOrFail(Long id) {
         var pessoa = pessoaRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Pessoa de id = " + id + " não encontrada."));
 
-        return  PessoaDTO.create(pessoa);
+        return  pessoa;
+    }
+
+    public PessoaDTO findById(Long id) {
+        return PessoaDTO.create(findOrFail(id));
     }
 
     public Page<PessoaDTO> findAll(Pageable pageable) {
