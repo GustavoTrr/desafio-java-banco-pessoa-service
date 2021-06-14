@@ -8,6 +8,7 @@ import javax.validation.ValidationException;
 import com.gustavotorres.cadastropessoa.dtos.PessoaCadastroInputDTO;
 import com.gustavotorres.cadastropessoa.dtos.PessoaDTO;
 import com.gustavotorres.cadastropessoa.entities.Pessoa;
+import com.gustavotorres.cadastropessoa.exceptions.ResourceNotFoundException;
 import com.gustavotorres.cadastropessoa.repositories.PessoaRepository;
 import com.gustavotorres.cadastropessoa.utils.HashUtils;
 
@@ -74,7 +75,8 @@ public class PessoaService {
     }
 
     public PessoaDTO findOrFail(Long id) {
-        var pessoa = pessoaRepository.findById(id).orElse(null);
+        var pessoa = pessoaRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Pessoa de id = " + id + " não encontrada."));
 
         return  PessoaDTO.create(pessoa);
     }
