@@ -17,18 +17,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler {
     
     public final ResponseEntity<ExceptionResponse> handlerBadRequestException(Exception ex, WebRequest request) {
+        //@TODO Criar Log
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<ExceptionResponse>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ValidationException.class)
     public final ResponseEntity<ExceptionResponse> handlerValidationException(Exception ex, WebRequest request) {
+        //@TODO Criar Log
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<ExceptionResponse>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<ExceptionResponse> handlerDefaultException(Exception ex, WebRequest request) {
+        //@TODO Criar Log
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), "Erro interno", request.getDescription(false));
         return new ResponseEntity<ExceptionResponse>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
