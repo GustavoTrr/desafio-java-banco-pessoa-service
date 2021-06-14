@@ -1,5 +1,7 @@
 package com.gustavotorres.cadastropessoa.dtos;
 
+import java.io.Serializable;
+
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.Max;
@@ -12,6 +14,7 @@ import com.gustavotorres.cadastropessoa.entities.Pessoa;
 import com.gustavotorres.cadastropessoa.enums.TipoPessoa;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.RepresentationModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PessoaDTO {
+public class PessoaDTO extends RepresentationModel<PessoaDTO> implements Serializable {
     
     private Long id;
 

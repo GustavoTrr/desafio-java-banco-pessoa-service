@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @RequestMapping("/pessoas")
 public class PessoaController {
@@ -45,9 +48,11 @@ public class PessoaController {
 
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection,"nome"));
 
-            Page<PessoaDTO> pessoas = pessoaService.findAll(pageable);
+            Page<PessoaDTO> pagedListPessoaDTO = pessoaService.findAll(pageable);
+
+            pagedListPessoaDTO.stream().forEach(p -> {p.add(linkTo(methodOn(PessoaController.class).findById(p.getId())).withSelfRel());});
             
-            PagedModel<EntityModel<PessoaDTO>> pagedModel = assembler.toModel(pessoas);
+            PagedModel<EntityModel<PessoaDTO>> pagedModel = assembler.toModel(pagedListPessoaDTO);
 
             return new ResponseEntity<>(pagedModel,HttpStatus.OK);
 
@@ -56,16 +61,19 @@ public class PessoaController {
     @GetMapping(value = "/{id}",
                 produces = {"application/json","application/xml","application/x-yaml"})
     public ResponseEntity<?> findById(@PathVariable Long id) {
-            return new ResponseEntity<>(pessoaService.findById(id),HttpStatus.OK);
+            PessoaDTO pessoaDTO = pessoaService.findById(id);
+            pessoaDTO.add(linkTo(methodOn(PessoaController.class).findById(pessoaDTO.getId())).withSelfRel());
+            return new ResponseEntity<>(pessoaDTO,HttpStatus.OK);
 
     }
 
     @PostMapping(produces = {"application/json","application/xml","application/x-yaml"},
                 consumes = {"application/json","application/xml","application/x-yaml"})
-    public PessoaDTO cadastrarPessoa(@Valid @RequestBody PessoaCadastroInputDTO pessoaInputDTO) {
+    public ResponseEntity<?> cadastrarPessoa(@Valid @RequestBody PessoaCadastroInputDTO pessoaInputDTO) {
         PessoaDTO pessoaDTORetorno = pessoaService.cadastrarPessoa(pessoaInputDTO);
+        pessoaDTORetorno.add(linkTo(methodOn(PessoaController.class).findById(pessoaDTORetorno.getId())).withSelfRel());
 
-        return pessoaDTORetorno;
+        return new ResponseEntity<>(pessoaDTORetorno,HttpStatus.CREATED);
     }
 
 }
