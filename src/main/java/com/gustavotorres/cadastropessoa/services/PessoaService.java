@@ -1,12 +1,15 @@
 package com.gustavotorres.cadastropessoa.services;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.validation.ValidationException;
+
+import com.gustavotorres.cadastropessoa.dtos.PessoaCadastroInputDTO;
 import com.gustavotorres.cadastropessoa.dtos.PessoaDTO;
 import com.gustavotorres.cadastropessoa.entities.Pessoa;
 import com.gustavotorres.cadastropessoa.repositories.PessoaRepository;
+import com.gustavotorres.cadastropessoa.utils.HashUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,44 +21,62 @@ public class PessoaService {
     
     @Autowired PessoaRepository pessoaRepository;
 
-    public PessoaDTO cadastrarPessoa() {
-        return new PessoaDTO();
+    @Autowired
+    TipoPessoaService tipoPessoaService;
+
+    @Autowired
+    TipoDocumentoService tipoDocumentoService;
+
+    public PessoaDTO cadastrarPessoa(PessoaCadastroInputDTO pessoaCadastroDTO) {
+        
+        validarPessoaParaCadastro(pessoaCadastroDTO);
+        
+        Pessoa pessoaParaCriar = prepararPessoaParaCadastro(pessoaCadastroDTO);
+
+        Pessoa pessoaCriada = pessoaRepository.save(pessoaParaCriar);
+
+        // @TODO envia requisição assincrona para criar conta
+
+        return PessoaDTO.create(pessoaCriada);
+    }
+
+    public void validarPessoaParaCadastro(PessoaCadastroInputDTO pessoaCadastroDTO) {
+
+        var numDoc = pessoaCadastroDTO.getNumeroDocumento();
+
+        if (!tipoDocumentoService.isDocumentoValido(numDoc)) {
+            throw new ValidationException("Número de Documento Inválido.");
+        }
+
+        if (pessoaRepository.findByNumeroDocumento(numDoc) != null) {
+            throw new ValidationException("Documento já cadastrado.");
+        }
+    }
+
+    public Pessoa prepararPessoaParaCadastro(PessoaCadastroInputDTO pessoaCadastroDTO) {
+
+        var pessoaDTO = PessoaDTO.create(pessoaCadastroDTO);
+        var tipoPessoa = tipoPessoaService.definirTipoPessoaPorDocumento(pessoaDTO.getNumeroDocumento());
+
+        pessoaDTO.setTipoPessoa(tipoPessoa);
+        pessoaDTO.setScore(ScoreService.gerarScoreRandomico());
+        pessoaDTO.setIdPublico(gerarIdPublico(pessoaDTO));
+
+        return Pessoa.create(pessoaDTO);
+    }
+
+    private String gerarIdPublico(PessoaDTO pessoaDTO) {
+        return HashUtils.getHashMd5(pessoaDTO.getNome() + pessoaDTO.getNumeroDocumento());
     }
 
     public List<PessoaDTO> findAll() {
         return pessoaRepository.findAll().stream().map(this::convertToPessoaDTO).collect(Collectors.toList());
     }
 
-    public PessoaDTO create(PessoaDTO pessoaDTO) {
-        
-        Pessoa pessoa = pessoaRepository.save(Pessoa.create(pessoaDTO));
-
-        return PessoaDTO.create(pessoa);
-
-    }
-
-    public PessoaDTO findById(Long id) {
+    public PessoaDTO findOrFail(Long id) {
         var pessoa = pessoaRepository.findById(id).orElse(null);
 
         return  PessoaDTO.create(pessoa);
-    }
-
-    public PessoaDTO update(Long id, PessoaDTO pessoaDTO) {
-        final Optional<Pessoa> optionalPessoa = pessoaRepository.findById(id);
-        
-        pessoaDTO.setId(id);
-
-        if (!optionalPessoa.isPresent()) {
-        }
-
-        return PessoaDTO.create(pessoaRepository.save(Pessoa.create(pessoaDTO)));
-
-    }
-
-    public void delete(Long id) {
-        var pessoa = pessoaRepository.findById(id).orElse(null);
-
-        pessoaRepository.delete(pessoa);
     }
 
     public Page<PessoaDTO> findAll(Pageable pageable) {
