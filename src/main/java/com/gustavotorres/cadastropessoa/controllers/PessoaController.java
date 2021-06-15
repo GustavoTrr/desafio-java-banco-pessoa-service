@@ -1,5 +1,8 @@
 package com.gustavotorres.cadastropessoa.controllers;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import javax.validation.Valid;
 
 import com.gustavotorres.cadastropessoa.dtos.PessoaCadastroInputDTO;
@@ -25,11 +28,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/pessoas")
+@Api(value = "API Rest Pessoas")
 public class PessoaController {
     
     @Autowired
@@ -39,6 +43,7 @@ public class PessoaController {
     private PagedResourcesAssembler<PessoaDTO> assembler;
 
     @GetMapping(produces = {"application/json","application/xml","application/x-yaml"})
+    @ApiOperation(value = "Busca lista de pessoas")
         public ResponseEntity<?> findAll(@RequestParam(value = "page", defaultValue = "0") int page,    
         @RequestParam(value = "size", defaultValue = "12") int size,    
         @RequestParam(value = "sort", defaultValue = "asc") String sort
@@ -60,6 +65,7 @@ public class PessoaController {
 
     @GetMapping(value = "/{id}",
                 produces = {"application/json","application/xml","application/x-yaml"})
+    @ApiOperation(value = "Busca pessoa pelo id")
     public ResponseEntity<?> findById(@PathVariable Long id) {
             PessoaDTO pessoaDTO = pessoaService.findById(id);
             pessoaDTO.add(linkTo(methodOn(PessoaController.class).findById(pessoaDTO.getId())).withSelfRel());
@@ -69,6 +75,7 @@ public class PessoaController {
 
     @PostMapping(produces = {"application/json","application/xml","application/x-yaml"},
                 consumes = {"application/json","application/xml","application/x-yaml"})
+    @ApiOperation(value = "Cadastra nova pessoa")
     public ResponseEntity<?> cadastrarPessoa(@Valid @RequestBody PessoaCadastroInputDTO pessoaInputDTO) {
         PessoaDTO pessoaDTORetorno = pessoaService.cadastrarPessoa(pessoaInputDTO);
         pessoaDTORetorno.add(linkTo(methodOn(PessoaController.class).findById(pessoaDTORetorno.getId())).withSelfRel());
