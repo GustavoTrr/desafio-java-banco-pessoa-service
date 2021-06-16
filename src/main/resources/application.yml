@@ -19,3 +19,14 @@ spring:
     url: jdbc:mysql://localhost:3306/desafiosouth_pessoaservice?allowPublicKeyRetrieval=true&sslMode=DISABLED&useSSL=false&serverTimezone=UTC
     username: southsysuser
     password:
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+
+constants:
+  rabbitmq:
+    exchange:  gtorresbank.exchange
+    routingkey: gtorresbank.conta.routingkey
