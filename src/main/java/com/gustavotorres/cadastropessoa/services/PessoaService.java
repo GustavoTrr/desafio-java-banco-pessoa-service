@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 import javax.validation.ValidationException;
 
 import com.gustavotorres.cadastropessoa.dtos.PessoaCadastroInputDTO;
+import com.gustavotorres.cadastropessoa.dtos.PessoaContaMessageDTO;
 import com.gustavotorres.cadastropessoa.dtos.PessoaDTO;
 import com.gustavotorres.cadastropessoa.entities.Pessoa;
 import com.gustavotorres.cadastropessoa.exceptions.ResourceNotFoundException;
+import com.gustavotorres.cadastropessoa.messages.CriaContaPessoaMessage;
 import com.gustavotorres.cadastropessoa.repositories.PessoaRepository;
 import com.gustavotorres.cadastropessoa.utils.HashUtils;
 
@@ -28,6 +30,9 @@ public class PessoaService {
     @Autowired
     TipoDocumentoService tipoDocumentoService;
 
+    @Autowired
+    CriaContaPessoaMessage criaContaPessoaMessage;
+
     public PessoaDTO cadastrarPessoa(PessoaCadastroInputDTO pessoaCadastroDTO) {
         
         validarPessoaParaCadastro(pessoaCadastroDTO);
@@ -36,9 +41,15 @@ public class PessoaService {
 
         Pessoa pessoaCriada = pessoaRepository.save(pessoaParaCriar);
 
-        // @TODO envia requisição assincrona para criar conta
+        PessoaDTO pessoaCriadaDTO = PessoaDTO.create(pessoaCriada);
+        
+        criarContaPessoa(pessoaCriadaDTO);
 
-        return PessoaDTO.create(pessoaCriada);
+        return pessoaCriadaDTO;
+    }
+
+    private void criarContaPessoa(PessoaDTO pessoaCriadaDTO) {
+        criaContaPessoaMessage.sendMessage(PessoaContaMessageDTO.create(pessoaCriadaDTO));
     }
 
     public void validarPessoaParaCadastro(PessoaCadastroInputDTO pessoaCadastroDTO) {
