@@ -28,5 +28,5 @@ spring:
 
 constants:
   rabbitmq:
-    exchange:  gtorresbank.exchange
+    exchange: gtorresbank.exchange
     routingkey: gtorresbank.conta.routingkey
