@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.gustavotorres</groupId>
 	<artifactId>cadastropessoa</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>cadastropessoa</name>
 	<description>Microsserviço de cadastro de pessoas para o desafio rh-southsystem/desafio-java-banco</description>
 	<properties>
